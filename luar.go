@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/aarzilli/golua/lua"
+	"github.com/vxcontrol/golua/lua"
 )
 
 // ConvError records a conversion error from value 'From' to value 'To'.
@@ -45,7 +45,7 @@ func luaToString(L *lua.State, idx int) string {
 	case lua.LUA_TNIL:
 		return "nil"
 	}
-	return fmt.Sprintf("%s: %p", L.LTypename(idx), L.ToPointer(idx))
+	return fmt.Sprintf("%s: %d", L.LTypename(idx), L.ToPointer(idx))
 }
 
 func luaDesc(L *lua.State, idx int) string {
@@ -268,9 +268,11 @@ func callGoFunction(L *lua.State, v reflect.Value, args []reflect.Value) []refle
 }
 
 func goToLuaFunction(L *lua.State, v reflect.Value) lua.LuaGoFunction {
-	switch f := v.Interface().(type) {
-	case func(*lua.State) int:
-		return f
+	if v.CanInterface() {
+		switch f := v.Interface().(type) {
+		case func(*lua.State) int:
+			return f
+		}
 	}
 
 	t := v.Type()
@@ -382,7 +384,7 @@ func goToLua(L *lua.State, a interface{}, proxify bool, visited visitor) {
 		return
 	}
 
-	if v.Kind() == reflect.Interface && !v.IsNil() {
+	if v.Kind() == reflect.Interface && !v.IsNil() && v.CanInterface() {
 		// Unbox interface.
 		v = reflect.ValueOf(v.Interface())
 	}
@@ -523,6 +525,10 @@ func goToLua(L *lua.State, a interface{}, proxify bool, visited visitor) {
 	case reflect.Func:
 		L.PushGoFunction(goToLuaFunction(L, v))
 	default:
+		if !v.CanInterface() {
+			L.PushNil()
+			return
+		}
 		if val, ok := v.Interface().(error); ok {
 			L.PushString(val.Error())
 		} else if v.IsNil() {

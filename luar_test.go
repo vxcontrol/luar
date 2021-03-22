@@ -9,7 +9,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/aarzilli/golua/lua"
+	"github.com/vxcontrol/golua/lua"
 )
 
 type luaTestData struct {
@@ -778,7 +778,7 @@ end
 			t.Fatal(err)
 		}
 		if !reflect.DeepEqual(got, want) {
-			t.Errorf("got %q, want %q", got, want)
+			t.Errorf("got %+v, want %+v", got, want)
 		}
 		checkStack(t, L)
 
@@ -900,7 +900,7 @@ func TestLuaObjectIter(t *testing.T) {
 
 	wantValues := map[string]float64{"foo": 10, "bar": 20}
 	if !reflect.DeepEqual(values, wantValues) {
-		t.Errorf("got %q, want %q", keys, wantValues)
+		t.Errorf("got %+v, want %+v", keys, wantValues)
 	}
 
 	checkStack(t, L)
@@ -946,7 +946,7 @@ func TestLuaObjectIterMT(t *testing.T) {
 
 	wantValues := map[string]float64{"foo": 10, "bar": 20}
 	if !reflect.DeepEqual(values, wantValues) {
-		t.Errorf("got %q, want %q", keys, wantValues)
+		t.Errorf("got %+v, want %+v", keys, wantValues)
 	}
 
 	checkStack(t, L)

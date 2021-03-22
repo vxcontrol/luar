@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/aarzilli/golua/lua"
+	"github.com/vxcontrol/golua/lua"
 )
 
 // Lua proxy objects for Go slices, maps and structs
@@ -159,7 +159,7 @@ func makeValueProxy(L *lua.State, v reflect.Value, proxyMT string) {
 	proxymu.Lock()
 	id := proxyIdCounter
 	proxyIdCounter++
-	proxyMap[id] = &valueProxy{ v: v, t: v.Type() }
+	proxyMap[id] = &valueProxy{v: v, t: v.Type()}
 	proxymu.Unlock()
 
 	L.Pop(1)

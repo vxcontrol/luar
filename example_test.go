@@ -8,11 +8,10 @@ import (
 	"fmt"
 	"log"
 	"sort"
-	"strconv"
 	"sync"
 
-	"github.com/aarzilli/golua/lua"
-	"github.com/stevedonovan/luar"
+	"github.com/vxcontrol/golua/lua"
+	"github.com/vxcontrol/luar"
 )
 
 func Example() {
@@ -144,7 +143,7 @@ func ExampleInit() {
 local res = foo {10, 20, 30, 40}
 
 -- The result is a map-proxy.
-print(res['1'], res['2'])
+print(res[1], res[2])
 
 -- Which we may explicitly convert to a table.
 res = luar.unproxify(res)
@@ -153,10 +152,10 @@ for k,v in pairs(res) do
 end
 `
 
-	foo := func(args []int) (res map[string]int) {
-		res = make(map[string]int)
+	foo := func(args []int) (res map[int]int) {
+		res = make(map[int]int)
 		for i, val := range args {
-			res[strconv.Itoa(i)] = val * val
+			res[i] = val * val
 		}
 		return
 	}
@@ -173,12 +172,12 @@ end
 	if res != nil {
 		fmt.Println("Error:", res)
 	}
-	// Output:
+	// Unordered output:
 	// 400 900
-	// 1 400
 	// 0 100
-	// 3 1600
+	// 1 400
 	// 2 900
+	// 3 1600
 }
 
 func ExampleLuaObject_Call() {

@@ -14,7 +14,7 @@ User-defined types can be made available to Lua as well: their exported methods
 can be called and usual operations such as indexing or arithmetic can be
 performed.
 
-See the [documentation](http://godoc.org/github.com/stevedonovan/luar) for usage
+See the [documentation](http://godoc.org/github.com/vxcontrol/luar) for usage
 instructions and examples.
 
 # Installation
@@ -23,12 +23,20 @@ Install with
 
     go get <repo>/luar
 
-Luar uses Alessandro Arzilli's [golua](https://github.com/aarzilli/golua).
+Luar uses Alessandro Arzilli's [golua](https://github.com/vxcontrol/golua).
 See golua's homepage for further installation details.
 
 # REPL
 
 Version 1.x features an example REPL that is available in the `cmd` folder.
+
+# Run tests
+
+```
+go test -ldflags "-v -L ../vxcommon/lib/mingw32 -extldflags '-Wl,--export-all-symbols \
+-Wl,--whole-archive ../vxcommon/lib/mingw32/libluab.a -Wl,--no-whole-archive \
+-lgdi32 -lmsimg32 -lopengl32 -lwinmm -lws2_32 -lole32 -lluajit -lstdc++'" -v ./...
+```
 
 # Changelog
 
