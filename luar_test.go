@@ -1,6 +1,7 @@
 package luar
 
 import (
+	"fmt"
 	"reflect"
 	"runtime"
 	"sort"
@@ -711,7 +712,7 @@ func TestLuaObjectMT(t *testing.T) {
 		// Note: we skip error checking.
 		v, _ := valueOfProxy(L, 1)
 		k := L.ToInteger(2)
-		L.PushString(string(v.Index(k).Int()))
+		L.PushString(fmt.Sprintf("%c", v.Index(k).Int()))
 		return 1
 	}
 
@@ -866,9 +867,13 @@ setmetatable(a, { __call = function(arg) a[1] = a[1] + arg end })
 
 	err = a.Call(nil)
 	wantErr := "[string \"...\"]:3: attempt to perform arithmetic on local 'arg' (a nil value)"
-	if err == nil || err.Error() != wantErr {
+	if err == nil {
+		t.Fatal("panic on lua Call must be catched")
+	}
+	if le, ok := err.(*lua.LuaError); !ok || le.Msg != wantErr {
 		t.Fatalf("got error %q, want %q", err, wantErr)
 	}
+
 	checkStack(t, L)
 }
 
