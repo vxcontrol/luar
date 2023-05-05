@@ -1,0 +1,80 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+env:
+  CGO_ENABLED: 1
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch:
+          - i386
+          - amd64
+        go:
+          - '1.19'
+          - '1.20'
+
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Go
+        uses: actions/setup-go@v4.0.0
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Install gcc
+        if: matrix.arch == 'amd64'
+        run: |
+          sudo apt update
+          sudo apt install gcc -y
+
+      - name: Install gcc-multilib
+        if: matrix.arch == 'i386'
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt update
+          sudo apt install gcc-multilib -y
+
+      # amd64
+      - name: 'Build with ${{ matrix.go }} for amd64'
+        if: ${{ matrix.arch == 'amd64' }}
+        run: go build -race -v ./...
+
+      - name: 'Test with ${{ matrix.go }} for amd64'
+        if: ${{ matrix.arch == 'amd64' }}
+        run: go test -race -v ./...
+
+      - name: 'Bench with ${{ matrix.go }} for amd64'
+        if: ${{ matrix.arch == 'amd64' }}
+        run: go test -bench=. -benchmem -race -v ./...
+      
+      # 386
+      - name: 'Build with ${{ matrix.go }} for i386'
+        if: ${{ matrix.arch == 'i386' }}
+        env:
+          CGOENABLED: true
+          GOARCH: 386
+          CGO_LDFLAGS: -static
+        run: |
+          go test -c -v ./...
+      
+      - name: 'Test and Bench with ${{ matrix.go }} on i386'
+        if: ${{ matrix.arch == 'i386' }}
+        uses: vxcontrol/run-on-arch-action@0.9.0
+        with:
+          arch: i386
+          distro: bullseye
+          dockerRunArgs: --mount type=bind,source="$(pwd)",target=/checkout,readonly
+          run: |
+            find /checkout -name '*.test' -type f -executable -print0 | \
+              xargs -t -0 -I '{}' sh -c '{} -test.v && {} -test.bench=. -test.benchmem -test.v'
